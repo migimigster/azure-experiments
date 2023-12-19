@@ -61,6 +61,9 @@
 				},
 				{
 					"name": "managerselect"
+				},
+				{
+					"name": "concatname"
 				}
 			],
 			"scriptLines": [
@@ -108,15 +111,14 @@
 				"          AGENT_ID_B,",
 				"          AGENT_FULLNAME),",
 				"     DR_COUNT = sum(DR_COUNT)) ~> DRCOUNTGROUPBY",
-				"selectagent, managerselect join(selectagent@AGENT_ID == managerselect@AGENT_ID,",
+				"selectagent, managerselect join(selectagent@UNIT_MANAGER_ID == managerselect@AGENT_ID,",
 				"     joinType:'left',",
 				"     matchType:'exact',",
 				"     ignoreSpaces: false,",
 				"     broadcast: 'auto')~> SOURCETODRCOUNT",
-				"SOURCETODRCOUNT select(mapColumn(",
+				"concatname select(mapColumn(",
 				"          AGENT_ID = selectagent@AGENT_ID,",
-				"          AGENT_FIRSTNAME,",
-				"          AGENT_LASTNAME,",
+				"          AGENT_FULLNAME,",
 				"          UNIT_MANAGER_ID = selectagent@UNIT_MANAGER_ID,",
 				"          MANAGER_FULLNAME,",
 				"          DR_COUNT",
@@ -139,6 +141,7 @@
 				"     ),",
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true) ~> managerselect",
+				"SOURCETODRCOUNT derive(AGENT_FULLNAME = concat(AGENT_FIRSTNAME,' ',AGENT_LASTNAME)) ~> concatname",
 				"FINALSELECT sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     umask: 0022,",
@@ -148,8 +151,7 @@
 				"     skipDuplicateMapOutputs: true,",
 				"     mapColumn(",
 				"          AGENT_ID,",
-				"          AGENT_FIRSTNAME,",
-				"          AGENT_LASTNAME,",
+				"          AGENT_FULLNAME,",
 				"          UNIT_MANAGER_ID,",
 				"          MANAGER_FULLNAME,",
 				"          DR_COUNT",
