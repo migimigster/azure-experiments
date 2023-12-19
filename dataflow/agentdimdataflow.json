@@ -37,12 +37,30 @@
 					"name": "agentmasterlistselectA"
 				},
 				{
-					"name": "AGENTFULLNAME",
+					"name": "MANAGERFULLNAMECONCAT",
 					"description": "concatenate agent names"
 				},
 				{
 					"name": "agentmasterlistselectB",
 					"description": "agent_id"
+				},
+				{
+					"name": "sumcasedrcount"
+				},
+				{
+					"name": "DRCOUNTGROUPBY"
+				},
+				{
+					"name": "SOURCETODRCOUNT"
+				},
+				{
+					"name": "FINALJOIN"
+				},
+				{
+					"name": "FINALSELECT"
+				},
+				{
+					"name": "CONCATAGENTNAME"
 				}
 			],
 			"scriptLines": [
@@ -66,7 +84,7 @@
 				"     validateSchema: false,",
 				"     ignoreNoFilesFound: false,",
 				"     partitionBy('roundRobin', 2)) ~> Bagentsource2",
-				"AGENTFULLNAME, agentmasterlistselectB join(AGENT_ID_A == UNIT_MANAGER_ID,",
+				"MANAGERFULLNAMECONCAT, agentmasterlistselectB join(AGENT_ID_A == UNIT_MANAGER_ID,",
 				"     joinType:'left',",
 				"     matchType:'exact',",
 				"     ignoreSpaces: false,",
@@ -78,14 +96,38 @@
 				"     ),",
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true) ~> agentmasterlistselectA",
-				"agentmasterlistselectA derive(AGENT_FIRSTNAME = concat(AGENT_FIRSTNAME, AGENT_LASTNAME)) ~> AGENTFULLNAME",
+				"agentmasterlistselectA derive(AGENT_FULLNAME = concat(AGENT_FIRSTNAME,' ', AGENT_LASTNAME)) ~> MANAGERFULLNAMECONCAT",
 				"Bagentsource2 select(mapColumn(",
 				"          AGENT_ID_B = AGENT_ID,",
 				"          UNIT_MANAGER_ID",
 				"     ),",
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true) ~> agentmasterlistselectB",
-				"leftjoin1 sink(allowSchemaDrift: true,",
+				"leftjoin1 derive(DR_COUNT = iif(UNIT_MANAGER_ID != AGENT_ID_A, 1, 0)) ~> sumcasedrcount",
+				"sumcasedrcount aggregate(groupBy(UNIT_MANAGER_ID,",
+				"          AGENT_ID_B,",
+				"          AGENT_FULLNAME),",
+				"     DR_COUNT = sum(DR_COUNT)) ~> DRCOUNTGROUPBY",
+				"Bagentsource2, DRCOUNTGROUPBY join(AGENT_ID == AGENT_ID_B,",
+				"     joinType:'left',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> SOURCETODRCOUNT",
+				"SOURCETODRCOUNT, DRCOUNTGROUPBY join(Bagentsource2@UNIT_MANAGER_ID == DRCOUNTGROUPBY@AGENT_ID_B,",
+				"     joinType:'inner',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> FINALJOIN",
+				"CONCATAGENTNAME select(mapColumn(",
+				"          AGENT_ID,",
+				"          AGENT_FULLNAME = AGENT_FULLFULLNAME,",
+				"          MANAGER_FULLNAME = DRCOUNTGROUPBY@AGENT_FULLNAME,",
+				"          UNIT_MANAGER_ID = DRCOUNTGROUPBY@UNIT_MANAGER_ID",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> FINALSELECT",
+				"FINALJOIN derive(AGENT_FULLFULLNAME = concat(AGENT_FIRSTNAME, ' ' ,AGENT_LASTNAME)) ~> CONCATAGENTNAME",
+				"FINALSELECT sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     umask: 0022,",
 				"     preCommands: [],",
