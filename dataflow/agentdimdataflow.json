@@ -54,13 +54,13 @@
 					"name": "SOURCETODRCOUNT"
 				},
 				{
-					"name": "FINALJOIN"
-				},
-				{
 					"name": "FINALSELECT"
 				},
 				{
-					"name": "CONCATAGENTNAME"
+					"name": "selectagent"
+				},
+				{
+					"name": "managerselect"
 				}
 			],
 			"scriptLines": [
@@ -108,32 +108,52 @@
 				"          AGENT_ID_B,",
 				"          AGENT_FULLNAME),",
 				"     DR_COUNT = sum(DR_COUNT)) ~> DRCOUNTGROUPBY",
-				"Bagentsource2, DRCOUNTGROUPBY join(AGENT_ID == AGENT_ID_B,",
+				"selectagent, managerselect join(selectagent@AGENT_ID == managerselect@AGENT_ID,",
 				"     joinType:'left',",
 				"     matchType:'exact',",
 				"     ignoreSpaces: false,",
 				"     broadcast: 'auto')~> SOURCETODRCOUNT",
-				"SOURCETODRCOUNT, DRCOUNTGROUPBY join(Bagentsource2@UNIT_MANAGER_ID == DRCOUNTGROUPBY@AGENT_ID_B,",
-				"     joinType:'inner',",
-				"     matchType:'exact',",
-				"     ignoreSpaces: false,",
-				"     broadcast: 'auto')~> FINALJOIN",
-				"CONCATAGENTNAME select(mapColumn(",
-				"          AGENT_ID,",
-				"          AGENT_FULLNAME = AGENT_FULLFULLNAME,",
-				"          MANAGER_FULLNAME = DRCOUNTGROUPBY@AGENT_FULLNAME,",
-				"          UNIT_MANAGER_ID = DRCOUNTGROUPBY@UNIT_MANAGER_ID",
+				"SOURCETODRCOUNT select(mapColumn(",
+				"          AGENT_ID = selectagent@AGENT_ID,",
+				"          AGENT_FIRSTNAME,",
+				"          AGENT_LASTNAME,",
+				"          UNIT_MANAGER_ID = selectagent@UNIT_MANAGER_ID,",
+				"          MANAGER_FULLNAME,",
+				"          DR_COUNT",
 				"     ),",
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true) ~> FINALSELECT",
-				"FINALJOIN derive(AGENT_FULLFULLNAME = concat(AGENT_FIRSTNAME, ' ' ,AGENT_LASTNAME)) ~> CONCATAGENTNAME",
+				"Bagentsource2 select(mapColumn(",
+				"          AGENT_ID,",
+				"          AGENT_FIRSTNAME,",
+				"          AGENT_LASTNAME,",
+				"          UNIT_MANAGER_ID",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> selectagent",
+				"DRCOUNTGROUPBY select(mapColumn(",
+				"          UNIT_MANAGER_ID,",
+				"          AGENT_ID = AGENT_ID_B,",
+				"          MANAGER_FULLNAME = AGENT_FULLNAME,",
+				"          DR_COUNT",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> managerselect",
 				"FINALSELECT sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     umask: 0022,",
 				"     preCommands: [],",
 				"     postCommands: [],",
 				"     skipDuplicateMapInputs: true,",
-				"     skipDuplicateMapOutputs: true) ~> sink1"
+				"     skipDuplicateMapOutputs: true,",
+				"     mapColumn(",
+				"          AGENT_ID,",
+				"          AGENT_FIRSTNAME,",
+				"          AGENT_LASTNAME,",
+				"          UNIT_MANAGER_ID,",
+				"          MANAGER_FULLNAME,",
+				"          DR_COUNT",
+				"     )) ~> sink1"
 			]
 		}
 	}
