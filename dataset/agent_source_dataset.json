@@ -1,0 +1,40 @@
+{
+	"name": "agent_source_dataset",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "MadlangPeopleMabuhayStorage",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "DelimitedText",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"fileName": "agent_source.csv",
+				"fileSystem": "source"
+			},
+			"columnDelimiter": ",",
+			"escapeChar": "\\",
+			"firstRowAsHeader": true,
+			"quoteChar": "\""
+		},
+		"schema": [
+			{
+				"name": "AGENT_ID",
+				"type": "String"
+			},
+			{
+				"name": "AGENT_FIRSTNAME",
+				"type": "String"
+			},
+			{
+				"name": "AGENT_LASTNAME",
+				"type": "String"
+			},
+			{
+				"name": "UNIT_MANAGER_ID",
+				"type": "String"
+			}
+		]
+	}
+}
