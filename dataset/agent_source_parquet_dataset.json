@@ -1,0 +1,19 @@
+{
+	"name": "agent_source_parquet_dataset",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "MadlangPeopleMabuhayStorage",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "Parquet",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"fileSystem": "staging"
+			},
+			"compressionCodec": "snappy"
+		},
+		"schema": []
+	}
+}
