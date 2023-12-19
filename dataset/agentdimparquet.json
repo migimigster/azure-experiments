@@ -1,0 +1,19 @@
+{
+	"name": "agentdimparquet",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "MadlangPeopleMabuhayStorage",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "Parquet",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"fileSystem": "mart"
+			},
+			"compressionCodec": "snappy"
+		},
+		"schema": []
+	}
+}
