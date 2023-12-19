@@ -8,7 +8,16 @@
 		"MadlangPeopleMabuhayStorage_accountKey": {
 			"value": ""
 		},
+		"mpmSQLDatabase_connectionString": {
+			"value": ""
+		},
+		"output_accountKey": {
+			"value": ""
+		},
 		"MadlangPeopleMabuhayStorage_properties_typeProperties_url": {
+			"value": "https://madlangpeoplemabuhay.dfs.core.windows.net/"
+		},
+		"output_properties_typeProperties_url": {
 			"value": "https://madlangpeoplemabuhay.dfs.core.windows.net/"
 		}
 	}

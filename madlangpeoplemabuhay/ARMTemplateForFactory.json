@@ -11,7 +11,19 @@
 			"type": "secureString",
 			"metadata": "Secure string for 'accountKey' of 'MadlangPeopleMabuhayStorage'"
 		},
+		"mpmSQLDatabase_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'mpmSQLDatabase'"
+		},
+		"output_accountKey": {
+			"type": "secureString",
+			"metadata": "Secure string for 'accountKey' of 'output'"
+		},
 		"MadlangPeopleMabuhayStorage_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://madlangpeoplemabuhay.dfs.core.windows.net/"
+		},
+		"output_properties_typeProperties_url": {
 			"type": "string",
 			"defaultValue": "https://madlangpeoplemabuhay.dfs.core.windows.net/"
 		}
@@ -167,7 +179,8 @@
 								"datasetParameters": {
 									"Aagentsource1": {},
 									"Bagentsource2": {},
-									"sink1": {}
+									"sink1": {},
+									"sink2": {}
 								}
 							},
 							"staging": {},
@@ -175,10 +188,7 @@
 								"coreCount": 8,
 								"computeType": "General"
 							},
-							"traceLevel": "None",
-							"cacheSinks": {
-								"firstRowOnly": true
-							}
+							"traceLevel": "Fine"
 						}
 					}
 				],
@@ -278,6 +288,47 @@
 					"location": {
 						"type": "AzureBlobFSLocation",
 						"fileSystem": "staging"
+					},
+					"compressionCodec": "snappy"
+				},
+				"schema": [
+					{
+						"name": "AGENT_ID",
+						"type": "UTF8"
+					},
+					{
+						"name": "AGENT_FIRSTNAME",
+						"type": "UTF8"
+					},
+					{
+						"name": "AGENT_LASTNAME",
+						"type": "UTF8"
+					},
+					{
+						"name": "UNIT_MANAGER_ID",
+						"type": "UTF8"
+					}
+				]
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/MadlangPeopleMabuhayStorage')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/agentdimparquet')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "MadlangPeopleMabuhayStorage",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "Parquet",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"fileSystem": "mart"
 					},
 					"compressionCodec": "snappy"
 				},
@@ -525,6 +576,36 @@
 			"dependsOn": []
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/mpmSQLDatabase')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureSqlDatabase",
+				"typeProperties": {
+					"connectionString": "[parameters('mpmSQLDatabase_connectionString')]"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/output')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureBlobFS",
+				"typeProperties": {
+					"url": "[parameters('output_properties_typeProperties_url')]",
+					"accountKey": {
+						"type": "SecureString",
+						"value": "[parameters('output_accountKey')]"
+					}
+				}
+			},
+			"dependsOn": []
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/agentdimdataflow')]",
 			"type": "Microsoft.DataFactory/factories/dataflows",
 			"apiVersion": "2018-06-01",
@@ -553,7 +634,18 @@
 								"referenceName": "DelimitedText1",
 								"type": "DatasetReference"
 							},
-							"name": "sink1"
+							"name": "sink1",
+							"rejectedDataLinkedService": {
+								"referenceName": "MadlangPeopleMabuhayStorage",
+								"type": "LinkedServiceReference"
+							}
+						},
+						{
+							"dataset": {
+								"referenceName": "agentdimparquet",
+								"type": "DatasetReference"
+							},
+							"name": "sink2"
 						}
 					],
 					"transformations": [
@@ -565,12 +657,45 @@
 							"name": "agentmasterlistselectA"
 						},
 						{
-							"name": "AGENTFULLNAME",
+							"name": "MANAGERFULLNAMECONCAT",
 							"description": "concatenate agent names"
 						},
 						{
 							"name": "agentmasterlistselectB",
 							"description": "agent_id"
+						},
+						{
+							"name": "sumcasedrcount"
+						},
+						{
+							"name": "DRCOUNTGROUPBY"
+						},
+						{
+							"name": "SOURCETODRCOUNT"
+						},
+						{
+							"name": "FINALSELECT"
+						},
+						{
+							"name": "xfmagent"
+						},
+						{
+							"name": "xfmdirectreportcount"
+						},
+						{
+							"name": "concatname"
+						},
+						{
+							"name": "xfmagentmasterlist"
+						},
+						{
+							"name": "xfmagentlist1"
+						},
+						{
+							"name": "FINALJOIN"
+						},
+						{
+							"name": "selectfinalce"
 						}
 					],
 					"scriptLines": [
@@ -594,7 +719,7 @@
 						"     validateSchema: false,",
 						"     ignoreNoFilesFound: false,",
 						"     partitionBy('roundRobin', 2)) ~> Bagentsource2",
-						"AGENTFULLNAME, agentmasterlistselectB join(AGENT_ID_A == UNIT_MANAGER_ID,",
+						"MANAGERFULLNAMECONCAT, agentmasterlistselectB join(AGENT_ID_A == agentmasterlistselectB@UNIT_MANAGER_ID,",
 						"     joinType:'left',",
 						"     matchType:'exact',",
 						"     ignoreSpaces: false,",
@@ -602,30 +727,128 @@
 						"Aagentsource1 select(mapColumn(",
 						"          AGENT_ID_A = AGENT_ID,",
 						"          AGENT_FIRSTNAME,",
-						"          AGENT_LASTNAME",
+						"          AGENT_LASTNAME,",
+						"          UNIT_MANAGER_ID",
 						"     ),",
 						"     skipDuplicateMapInputs: true,",
 						"     skipDuplicateMapOutputs: true) ~> agentmasterlistselectA",
-						"agentmasterlistselectA derive(AGENT_FIRSTNAME = concat(AGENT_FIRSTNAME, AGENT_LASTNAME)) ~> AGENTFULLNAME",
+						"agentmasterlistselectA derive(UNIT_MANAGER_NAME = concat(AGENT_FIRSTNAME,' ', AGENT_LASTNAME)) ~> MANAGERFULLNAMECONCAT",
 						"Bagentsource2 select(mapColumn(",
 						"          AGENT_ID_B = AGENT_ID,",
 						"          UNIT_MANAGER_ID",
 						"     ),",
 						"     skipDuplicateMapInputs: true,",
 						"     skipDuplicateMapOutputs: true) ~> agentmasterlistselectB",
-						"leftjoin1 sink(allowSchemaDrift: true,",
+						"xfmagentmasterlist derive(DR_COUNT = iif(UNIT_MANAGER_ID != AGENT_ID_A, 1, 0)) ~> sumcasedrcount",
+						"sumcasedrcount aggregate(groupBy(UNIT_MANAGER_ID,",
+						"          AGENT_ID_B,",
+						"          AGENT_FULLNAME),",
+						"     DR_COUNT = sum(DR_COUNT)) ~> DRCOUNTGROUPBY",
+						"xfmagent, xfmdirectreportcount join(xfmagent@AGENT_ID == xfmdirectreportcount@AGENT_ID,",
+						"     joinType:'left',",
+						"     matchType:'exact',",
+						"     ignoreSpaces: false,",
+						"     broadcast: 'auto')~> SOURCETODRCOUNT",
+						"concatname select(mapColumn(",
+						"          AGENT_ID,",
+						"          AGENT_FULLNAME,",
+						"          MANAGER_FULLNAME,",
+						"          UNIT_MANAGER_ID,",
+						"          DR_COUNT",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> FINALSELECT",
+						"Bagentsource2 select(mapColumn(",
+						"          AGENT_ID,",
+						"          AGENT_FIRSTNAME,",
+						"          AGENT_LASTNAME,",
+						"          UNIT_MANAGER_ID",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> xfmagent",
+						"DRCOUNTGROUPBY select(mapColumn(",
+						"          AGENT_ID = AGENT_ID_B,",
+						"          UNIT_MANAGER_ID,",
+						"          MANAGER_FULLNAME = AGENT_FULLNAME,",
+						"          DR_COUNT",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> xfmdirectreportcount",
+						"selectfinalce derive(AGENT_FULLNAME = concat(AGENT_FIRSTNAME,' ',AGENT_LASTNAME)) ~> concatname",
+						"leftjoin1 select(mapColumn(",
+						"          AGENT_ID_A,",
+						"          AGENT_FULLNAME = UNIT_MANAGER_NAME,",
+						"          AGENT_ID_B,",
+						"          UNIT_MANAGER_ID = agentmasterlistselectB@UNIT_MANAGER_ID",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> xfmagentmasterlist",
+						"SOURCETODRCOUNT select(mapColumn(",
+						"          AGENT_ID = xfmagent@AGENT_ID,",
+						"          AGENT_FIRSTNAME,",
+						"          AGENT_LASTNAME,",
+						"          UNIT_MANAGER_ID = xfmagent@UNIT_MANAGER_ID,",
+						"          MANAGER_FULLNAME,",
+						"          DR_COUNT",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> xfmagentlist1",
+						"xfmagentlist1, xfmdirectreportcount join(xfmagentlist1@UNIT_MANAGER_ID == xfmdirectreportcount@AGENT_ID,",
+						"     joinType:'inner',",
+						"     matchType:'exact',",
+						"     ignoreSpaces: false,",
+						"     broadcast: 'auto')~> FINALJOIN",
+						"FINALJOIN select(mapColumn(",
+						"          AGENT_ID = xfmagentlist1@AGENT_ID,",
+						"          AGENT_FIRSTNAME,",
+						"          AGENT_LASTNAME,",
+						"          UNIT_MANAGER_ID = xfmagentlist1@UNIT_MANAGER_ID,",
+						"          MANAGER_FULLNAME = xfmagentlist1@MANAGER_FULLNAME,",
+						"          DR_COUNT = xfmagentlist1@DR_COUNT",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> selectfinalce",
+						"FINALSELECT sink(allowSchemaDrift: true,",
 						"     validateSchema: false,",
+						"     filePattern:'agentdimoutput',",
+						"     truncate: true,",
 						"     umask: 0022,",
 						"     preCommands: [],",
 						"     postCommands: [],",
 						"     skipDuplicateMapInputs: true,",
-						"     skipDuplicateMapOutputs: true) ~> sink1"
+						"     skipDuplicateMapOutputs: true,",
+						"     saveOrder: 1,",
+						"     mapColumn(",
+						"          AGENT_ID,",
+						"          AGENT_FULLNAME,",
+						"          MANAGER_FULLNAME,",
+						"          UNIT_MANAGER_ID,",
+						"          DR_COUNT",
+						"     ),",
+						"     format: 'parquet') ~> sink1",
+						"FINALSELECT sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     format: 'parquet',",
+						"     umask: 0022,",
+						"     preCommands: [],",
+						"     postCommands: [],",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     mapColumn(",
+						"          AGENT_ID,",
+						"          AGENT_FULLNAME,",
+						"          MANAGER_FULLNAME,",
+						"          UNIT_MANAGER_ID,",
+						"          DR_COUNT",
+						"     )) ~> sink2"
 					]
 				}
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/datasets/agent_source_dataset')]",
-				"[concat(variables('factoryId'), '/datasets/DelimitedText1')]"
+				"[concat(variables('factoryId'), '/datasets/DelimitedText1')]",
+				"[concat(variables('factoryId'), '/linkedServices/MadlangPeopleMabuhayStorage')]",
+				"[concat(variables('factoryId'), '/datasets/agentdimparquet')]"
 			]
 		}
 	]

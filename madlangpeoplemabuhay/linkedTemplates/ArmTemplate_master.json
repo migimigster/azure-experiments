@@ -11,7 +11,19 @@
 			"type": "secureString",
 			"metadata": "Secure string for 'accountKey' of 'MadlangPeopleMabuhayStorage'"
 		},
+		"mpmSQLDatabase_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'mpmSQLDatabase'"
+		},
+		"output_accountKey": {
+			"type": "secureString",
+			"metadata": "Secure string for 'accountKey' of 'output'"
+		},
 		"MadlangPeopleMabuhayStorage_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://madlangpeoplemabuhay.dfs.core.windows.net/"
+		},
+		"output_properties_typeProperties_url": {
 			"type": "string",
 			"defaultValue": "https://madlangpeoplemabuhay.dfs.core.windows.net/"
 		},
@@ -45,8 +57,17 @@
 					"MadlangPeopleMabuhayStorage_accountKey": {
 						"value": "[parameters('MadlangPeopleMabuhayStorage_accountKey')]"
 					},
+					"mpmSQLDatabase_connectionString": {
+						"value": "[parameters('mpmSQLDatabase_connectionString')]"
+					},
+					"output_accountKey": {
+						"value": "[parameters('output_accountKey')]"
+					},
 					"MadlangPeopleMabuhayStorage_properties_typeProperties_url": {
 						"value": "[parameters('MadlangPeopleMabuhayStorage_properties_typeProperties_url')]"
+					},
+					"output_properties_typeProperties_url": {
+						"value": "[parameters('output_properties_typeProperties_url')]"
 					}
 				}
 			},
