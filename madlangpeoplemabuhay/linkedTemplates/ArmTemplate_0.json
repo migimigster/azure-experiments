@@ -591,13 +591,6 @@
 								"referenceName": "MadlangPeopleMabuhayStorage",
 								"type": "LinkedServiceReference"
 							}
-						},
-						{
-							"dataset": {
-								"referenceName": "agentdimparquet",
-								"type": "DatasetReference"
-							},
-							"name": "sink2"
 						}
 					],
 					"transformations": [
@@ -762,14 +755,13 @@
 						"     skipDuplicateMapOutputs: true) ~> selectfinalce",
 						"FINALSELECT sink(allowSchemaDrift: true,",
 						"     validateSchema: false,",
-						"     filePattern:'agentdimoutput',",
 						"     truncate: true,",
 						"     umask: 0022,",
 						"     preCommands: [],",
 						"     postCommands: [],",
 						"     skipDuplicateMapInputs: true,",
 						"     skipDuplicateMapOutputs: true,",
-						"     saveOrder: 1,",
+						"     saveOrder: 0,",
 						"     mapColumn(",
 						"          AGENT_ID,",
 						"          AGENT_FULLNAME,",
@@ -777,30 +769,14 @@
 						"          UNIT_MANAGER_ID,",
 						"          DR_COUNT",
 						"     ),",
-						"     format: 'parquet') ~> sink1",
-						"FINALSELECT sink(allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     format: 'parquet',",
-						"     umask: 0022,",
-						"     preCommands: [],",
-						"     postCommands: [],",
-						"     skipDuplicateMapInputs: true,",
-						"     skipDuplicateMapOutputs: true,",
-						"     mapColumn(",
-						"          AGENT_ID,",
-						"          AGENT_FULLNAME,",
-						"          MANAGER_FULLNAME,",
-						"          UNIT_MANAGER_ID,",
-						"          DR_COUNT",
-						"     )) ~> sink2"
+						"     format: 'parquet') ~> sink1"
 					]
 				}
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/datasets/agent_source_dataset')]",
 				"[concat(variables('factoryId'), '/datasets/DelimitedText1')]",
-				"[concat(variables('factoryId'), '/linkedServices/MadlangPeopleMabuhayStorage')]",
-				"[concat(variables('factoryId'), '/datasets/agentdimparquet')]"
+				"[concat(variables('factoryId'), '/linkedServices/MadlangPeopleMabuhayStorage')]"
 			]
 		},
 		{
@@ -829,8 +805,7 @@
 								"datasetParameters": {
 									"Aagentsource1": {},
 									"Bagentsource2": {},
-									"sink1": {},
-									"sink2": {}
+									"sink1": {}
 								}
 							},
 							"staging": {},
