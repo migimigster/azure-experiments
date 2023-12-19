@@ -30,6 +30,13 @@
 						"referenceName": "MadlangPeopleMabuhayStorage",
 						"type": "LinkedServiceReference"
 					}
+				},
+				{
+					"dataset": {
+						"referenceName": "agentdimparquet",
+						"type": "DatasetReference"
+					},
+					"name": "sink2"
 				}
 			],
 			"transformations": [
@@ -209,7 +216,22 @@
 				"          UNIT_MANAGER_ID,",
 				"          DR_COUNT",
 				"     ),",
-				"     format: 'parquet') ~> sink1"
+				"     format: 'parquet') ~> sink1",
+				"FINALSELECT sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'parquet',",
+				"     umask: 0022,",
+				"     preCommands: [],",
+				"     postCommands: [],",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     mapColumn(",
+				"          AGENT_ID,",
+				"          AGENT_FULLNAME,",
+				"          MANAGER_FULLNAME,",
+				"          UNIT_MANAGER_ID,",
+				"          DR_COUNT",
+				"     )) ~> sink2"
 			]
 		}
 	}
