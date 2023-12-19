@@ -3,7 +3,7 @@
 	"properties": {
 		"activities": [
 			{
-				"name": "Copy data1",
+				"name": "CSV TO PARQUET",
 				"type": "Copy",
 				"dependsOn": [],
 				"policy": {
@@ -29,8 +29,7 @@
 					"sink": {
 						"type": "ParquetSink",
 						"storeSettings": {
-							"type": "AzureBlobFSWriteSettings",
-							"copyBehavior": "FlattenHierarchy"
+							"type": "AzureBlobFSWriteSettings"
 						},
 						"formatSettings": {
 							"type": "ParquetWriteSettings"
@@ -47,8 +46,7 @@
 									"physicalType": "String"
 								},
 								"sink": {
-									"name": "AGENT_ID",
-									"type": "String",
+									"name": "AGENTID",
 									"physicalType": "UTF8"
 								}
 							},
@@ -59,8 +57,7 @@
 									"physicalType": "String"
 								},
 								"sink": {
-									"name": "AGENT_FIRSTNAME",
-									"type": "String",
+									"name": "AGENTFIRSTNAME",
 									"physicalType": "UTF8"
 								}
 							},
@@ -71,8 +68,7 @@
 									"physicalType": "String"
 								},
 								"sink": {
-									"name": "AGENT_LASTNAME",
-									"type": "String",
+									"name": "AGENTLASTNAME",
 									"physicalType": "UTF8"
 								}
 							},
@@ -83,8 +79,7 @@
 									"physicalType": "String"
 								},
 								"sink": {
-									"name": "UNIT_MANAGER_ID",
-									"type": "String",
+									"name": "UNITMANAGER_ID",
 									"physicalType": "UTF8"
 								}
 							}
