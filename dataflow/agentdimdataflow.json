@@ -1,0 +1,98 @@
+{
+	"name": "agentdimdataflow",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "agent_source_dataset",
+						"type": "DatasetReference"
+					},
+					"name": "Aagentsource1"
+				},
+				{
+					"dataset": {
+						"referenceName": "agent_source_dataset",
+						"type": "DatasetReference"
+					},
+					"name": "Bagentsource2"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "DelimitedText1",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
+			"transformations": [
+				{
+					"name": "leftjoin1",
+					"description": "left join s_agent1 to s_agent2 via unit_manager_id = agent_id"
+				},
+				{
+					"name": "agentmasterlistselectA"
+				},
+				{
+					"name": "AGENTFULLNAME",
+					"description": "concatenate agent names"
+				},
+				{
+					"name": "agentmasterlistselectB",
+					"description": "agent_id"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          AGENT_ID as string,",
+				"          AGENT_FIRSTNAME as string,",
+				"          AGENT_LASTNAME as string,",
+				"          UNIT_MANAGER_ID as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false,",
+				"     partitionBy('roundRobin', 2)) ~> Aagentsource1",
+				"source(output(",
+				"          AGENT_ID as string,",
+				"          AGENT_FIRSTNAME as string,",
+				"          AGENT_LASTNAME as string,",
+				"          UNIT_MANAGER_ID as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false,",
+				"     partitionBy('roundRobin', 2)) ~> Bagentsource2",
+				"AGENTFULLNAME, agentmasterlistselectB join(AGENT_ID_A == UNIT_MANAGER_ID,",
+				"     joinType:'left',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> leftjoin1",
+				"Aagentsource1 select(mapColumn(",
+				"          AGENT_ID_A = AGENT_ID,",
+				"          AGENT_FIRSTNAME,",
+				"          AGENT_LASTNAME",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> agentmasterlistselectA",
+				"agentmasterlistselectA derive(AGENT_FIRSTNAME = concat(AGENT_FIRSTNAME, AGENT_LASTNAME)) ~> AGENTFULLNAME",
+				"Bagentsource2 select(mapColumn(",
+				"          AGENT_ID_B = AGENT_ID,",
+				"          UNIT_MANAGER_ID",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> agentmasterlistselectB",
+				"leftjoin1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     umask: 0022,",
+				"     preCommands: [],",
+				"     postCommands: [],",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> sink1"
+			]
+		}
+	}
+}

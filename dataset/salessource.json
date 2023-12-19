@@ -1,0 +1,64 @@
+{
+	"name": "salessource",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "MadlangPeopleMabuhayStorage",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "DelimitedText",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"fileName": "sales_source.csv",
+				"fileSystem": "source"
+			},
+			"columnDelimiter": ",",
+			"escapeChar": "\\",
+			"firstRowAsHeader": true,
+			"quoteChar": "\""
+		},
+		"schema": [
+			{
+				"name": "TRANSACTION_SEQ_NO",
+				"type": "String"
+			},
+			{
+				"name": "CUST_FNAME",
+				"type": "String"
+			},
+			{
+				"name": "CUST_LNAME",
+				"type": "String"
+			},
+			{
+				"name": "CIVIL_STATUS",
+				"type": "String"
+			},
+			{
+				"name": "ADDRESS",
+				"type": "String"
+			},
+			{
+				"name": "EMAIL",
+				"type": "String"
+			},
+			{
+				"name": "AGENT_ID",
+				"type": "String"
+			},
+			{
+				"name": "PURCHASE_DATE",
+				"type": "String"
+			},
+			{
+				"name": "PRODUCT_ID",
+				"type": "String"
+			},
+			{
+				"name": "PAYMENT",
+				"type": "String"
+			}
+		]
+	}
+}

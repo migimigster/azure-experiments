@@ -1,0 +1,36 @@
+{
+	"name": "productsource",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "MadlangPeopleMabuhayStorage",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "DelimitedText",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"fileName": "product_source.csv",
+				"fileSystem": "source"
+			},
+			"columnDelimiter": ",",
+			"escapeChar": "\\",
+			"firstRowAsHeader": true,
+			"quoteChar": "\""
+		},
+		"schema": [
+			{
+				"name": "PRODUCT_ID",
+				"type": "String"
+			},
+			{
+				"name": "PRODUCT_NM",
+				"type": "String"
+			},
+			{
+				"name": "PRICE",
+				"type": "String"
+			}
+		]
+	}
+}
