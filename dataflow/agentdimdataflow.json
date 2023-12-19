@@ -22,10 +22,14 @@
 			"sinks": [
 				{
 					"dataset": {
-						"referenceName": "DelimitedText1",
+						"referenceName": "agentdimparquet",
 						"type": "DatasetReference"
 					},
-					"name": "sink1"
+					"name": "sink1",
+					"rejectedDataLinkedService": {
+						"referenceName": "MadlangPeopleMabuhayStorage",
+						"type": "LinkedServiceReference"
+					}
 				}
 			],
 			"transformations": [
@@ -99,15 +103,16 @@
 				"     validateSchema: false,",
 				"     ignoreNoFilesFound: false,",
 				"     partitionBy('roundRobin', 2)) ~> Bagentsource2",
-				"MANAGERFULLNAMECONCAT, agentmasterlistselectB join(AGENT_ID_A == UNIT_MANAGER_ID,",
+				"MANAGERFULLNAMECONCAT, agentmasterlistselectB join(AGENT_ID_A == agentmasterlistselectB@UNIT_MANAGER_ID,",
 				"     joinType:'left',",
 				"     matchType:'exact',",
 				"     ignoreSpaces: false,",
 				"     broadcast: 'auto')~> leftjoin1",
 				"Aagentsource1 select(mapColumn(",
-				"          AGENT_ID_A = AGENT_ID,",
+				"          AGENT_ID,",
 				"          AGENT_FIRSTNAME,",
-				"          AGENT_LASTNAME",
+				"          AGENT_LASTNAME,",
+				"          UNIT_MANAGER_ID",
 				"     ),",
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true) ~> agentmasterlistselectA",
@@ -158,7 +163,7 @@
 				"          AGENT_ID_A,",
 				"          AGENT_FULLNAME = UNIT_MANAGER_NAME,",
 				"          AGENT_ID_B,",
-				"          UNIT_MANAGER_ID",
+				"          UNIT_MANAGER_ID = agentmasterlistselectB@UNIT_MANAGER_ID",
 				"     ),",
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true) ~> xfmagentmasterlist",
@@ -189,16 +194,20 @@
 				"     skipDuplicateMapOutputs: true) ~> selectfinalce",
 				"FINALSELECT sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
+				"     format: 'parquet',",
+				"     filePattern:'agentdimoutput',",
+				"     truncate: true,",
 				"     umask: 0022,",
 				"     preCommands: [],",
 				"     postCommands: [],",
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true,",
+				"     saveOrder: 1,",
 				"     mapColumn(",
 				"          AGENT_ID,",
 				"          AGENT_FULLNAME,",
-				"          UNIT_MANAGER_ID,",
 				"          MANAGER_FULLNAME,",
+				"          UNIT_MANAGER_ID,",
 				"          DR_COUNT",
 				"     )) ~> sink1"
 			]
