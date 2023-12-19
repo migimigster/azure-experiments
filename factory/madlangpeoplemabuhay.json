@@ -1,0 +1,9 @@
+{
+	"name": "madlangpeoplemabuhay",
+	"location": "eastus",
+	"identity": {
+		"type": "SystemAssigned",
+		"principalId": "ece848ca-6034-4c04-9c39-2350d4a01184",
+		"tenantId": "fcf67057-50c9-4ad4-98f3-ffca64add9e9"
+	}
+}
