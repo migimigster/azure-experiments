@@ -38,6 +38,33 @@
 			"dependsOn": []
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/DelimitedText1')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "MadlangPeopleMabuhayStorage",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"fileSystem": "mart"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/MadlangPeopleMabuhayStorage')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/agent_source_dataset')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
@@ -148,7 +175,117 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/productsource')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "MadlangPeopleMabuhayStorage",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"fileName": "product_source.csv",
+						"fileSystem": "source"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": [
+					{
+						"name": "PRODUCT_ID",
+						"type": "String"
+					},
+					{
+						"name": "PRODUCT_NM",
+						"type": "String"
+					},
+					{
+						"name": "PRICE",
+						"type": "String"
+					}
+				]
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/MadlangPeopleMabuhayStorage')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/sales_source_dataset')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "MadlangPeopleMabuhayStorage",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"fileName": "sales_source.csv",
+						"fileSystem": "source"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": [
+					{
+						"name": "TRANSACTION_SEQ_NO",
+						"type": "String"
+					},
+					{
+						"name": "CUST_FNAME",
+						"type": "String"
+					},
+					{
+						"name": "CUST_LNAME",
+						"type": "String"
+					},
+					{
+						"name": "CIVIL_STATUS",
+						"type": "String"
+					},
+					{
+						"name": "ADDRESS",
+						"type": "String"
+					},
+					{
+						"name": "EMAIL",
+						"type": "String"
+					},
+					{
+						"name": "AGENT_ID",
+						"type": "String"
+					},
+					{
+						"name": "PURCHASE_DATE",
+						"type": "String"
+					},
+					{
+						"name": "PRODUCT_ID",
+						"type": "String"
+					},
+					{
+						"name": "PAYMENT",
+						"type": "String"
+					}
+				]
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/MadlangPeopleMabuhayStorage')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/salessource')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
 			"properties": {
@@ -223,7 +360,7 @@
 			"properties": {
 				"activities": [
 					{
-						"name": "Copy data1",
+						"name": "CSV TO PARQUET",
 						"type": "Copy",
 						"dependsOn": [],
 						"policy": {
@@ -249,8 +386,7 @@
 							"sink": {
 								"type": "ParquetSink",
 								"storeSettings": {
-									"type": "AzureBlobFSWriteSettings",
-									"copyBehavior": "FlattenHierarchy"
+									"type": "AzureBlobFSWriteSettings"
 								},
 								"formatSettings": {
 									"type": "ParquetWriteSettings"
@@ -267,8 +403,7 @@
 											"physicalType": "String"
 										},
 										"sink": {
-											"name": "AGENT_ID",
-											"type": "String",
+											"name": "AGENTID",
 											"physicalType": "UTF8"
 										}
 									},
@@ -279,8 +414,7 @@
 											"physicalType": "String"
 										},
 										"sink": {
-											"name": "AGENT_FIRSTNAME",
-											"type": "String",
+											"name": "AGENTFIRSTNAME",
 											"physicalType": "UTF8"
 										}
 									},
@@ -291,8 +425,7 @@
 											"physicalType": "String"
 										},
 										"sink": {
-											"name": "AGENT_LASTNAME",
-											"type": "String",
+											"name": "AGENTLASTNAME",
 											"physicalType": "UTF8"
 										}
 									},
@@ -303,8 +436,7 @@
 											"physicalType": "String"
 										},
 										"sink": {
-											"name": "UNIT_MANAGER_ID",
-											"type": "String",
+											"name": "UNITMANAGER_ID",
 											"physicalType": "UTF8"
 										}
 									}
@@ -340,6 +472,160 @@
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/datasets/agent_source_dataset')]",
 				"[concat(variables('factoryId'), '/datasets/agent_source_parquet_dataset')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/agentdimdataflow')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "agent_source_dataset",
+								"type": "DatasetReference"
+							},
+							"name": "Aagentsource1"
+						},
+						{
+							"dataset": {
+								"referenceName": "agent_source_dataset",
+								"type": "DatasetReference"
+							},
+							"name": "Bagentsource2"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "DelimitedText1",
+								"type": "DatasetReference"
+							},
+							"name": "sink1"
+						}
+					],
+					"transformations": [
+						{
+							"name": "leftjoin1",
+							"description": "left join s_agent1 to s_agent2 via unit_manager_id = agent_id"
+						},
+						{
+							"name": "agentmasterlistselectA"
+						},
+						{
+							"name": "AGENTFULLNAME",
+							"description": "concatenate agent names"
+						},
+						{
+							"name": "agentmasterlistselectB",
+							"description": "agent_id"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          AGENT_ID as string,",
+						"          AGENT_FIRSTNAME as string,",
+						"          AGENT_LASTNAME as string,",
+						"          UNIT_MANAGER_ID as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false,",
+						"     partitionBy('roundRobin', 2)) ~> Aagentsource1",
+						"source(output(",
+						"          AGENT_ID as string,",
+						"          AGENT_FIRSTNAME as string,",
+						"          AGENT_LASTNAME as string,",
+						"          UNIT_MANAGER_ID as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false,",
+						"     partitionBy('roundRobin', 2)) ~> Bagentsource2",
+						"AGENTFULLNAME, agentmasterlistselectB join(AGENT_ID_A == UNIT_MANAGER_ID,",
+						"     joinType:'left',",
+						"     matchType:'exact',",
+						"     ignoreSpaces: false,",
+						"     broadcast: 'auto')~> leftjoin1",
+						"Aagentsource1 select(mapColumn(",
+						"          AGENT_ID_A = AGENT_ID,",
+						"          AGENT_FIRSTNAME,",
+						"          AGENT_LASTNAME",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> agentmasterlistselectA",
+						"agentmasterlistselectA derive(AGENT_FIRSTNAME = concat(AGENT_FIRSTNAME, AGENT_LASTNAME)) ~> AGENTFULLNAME",
+						"Bagentsource2 select(mapColumn(",
+						"          AGENT_ID_B = AGENT_ID,",
+						"          UNIT_MANAGER_ID",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> agentmasterlistselectB",
+						"leftjoin1 sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     umask: 0022,",
+						"     preCommands: [],",
+						"     postCommands: [],",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> sink1"
+					]
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/agent_source_dataset')]",
+				"[concat(variables('factoryId'), '/datasets/DelimitedText1')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/pipeline1')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Data flow1",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "agentdimdataflow",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"Aagentsource1": {},
+									"Bagentsource2": {},
+									"sink1": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "None",
+							"cacheSinks": {
+								"firstRowOnly": true
+							}
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/dataflows/agentdimdataflow')]"
 			]
 		}
 	]
