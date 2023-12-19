@@ -22,7 +22,7 @@
 			"sinks": [
 				{
 					"dataset": {
-						"referenceName": "agentdimparquet",
+						"referenceName": "DelimitedText1",
 						"type": "DatasetReference"
 					},
 					"name": "sink1",
@@ -109,7 +109,7 @@
 				"     ignoreSpaces: false,",
 				"     broadcast: 'auto')~> leftjoin1",
 				"Aagentsource1 select(mapColumn(",
-				"          AGENT_ID,",
+				"          AGENT_ID_A = AGENT_ID,",
 				"          AGENT_FIRSTNAME,",
 				"          AGENT_LASTNAME,",
 				"          UNIT_MANAGER_ID",
@@ -194,7 +194,6 @@
 				"     skipDuplicateMapOutputs: true) ~> selectfinalce",
 				"FINALSELECT sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
-				"     format: 'parquet',",
 				"     filePattern:'agentdimoutput',",
 				"     truncate: true,",
 				"     umask: 0022,",
@@ -209,7 +208,8 @@
 				"          MANAGER_FULLNAME,",
 				"          UNIT_MANAGER_ID,",
 				"          DR_COUNT",
-				"     )) ~> sink1"
+				"     ),",
+				"     format: 'parquet') ~> sink1"
 			]
 		}
 	}
